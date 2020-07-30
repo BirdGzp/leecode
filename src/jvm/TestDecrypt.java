@@ -1,0 +1,74 @@
+package jvm;
+
+import com.sun.xml.internal.messaging.saaj.util.Base64;
+
+import java.net.URLDecoder;
+
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.SecretKeySpec;
+
+public class TestDecrypt {
+	public static void main(String[] args) throws Exception{
+//		String encString = "2F2297314E96FA3E611793212E98A55FC33A374211CB5779E8291A95AEEFF47E9B9CA0F29EEAF8F068D4A997078404A1852386BD03A69036E1682A4661846405A96BB5EEF2003416F028DB5C872199AABDDE73702AF6DEDF66A7053437BF05D11EA819A26D5595C396A5FFDCAC0611E5F1A5FF8F10AD411558E4D84DD4A8A4D57C5857CE364C2F3DCC44C478E8BE1A12";
+		//2F2297314E96FA3E611793212E98A55FF77228C830A3A4BDE66893F42EFD9D0D81C4555A7FD6FB391547605D4F497AA95C57EE976E3F029801342813130D65E2575738923DCEA8988CD97203788A9D55FB008D0F1B76805A771A4F0F92358E249C9023AB65F02A9AAA955B7258C712B7DC71195020F0EF988894559A07C969711A7587B723156DD7AC054C294B34A8BE3BE801F5995F2FBF2C007B5DE2AA0C59EB107C8CB4512A5F6DFA54DF6D451F3FA14ABEE4198084582F9B767D6748D0D7
+		//8130DEB31A0E419D51E6791C4AFFEB5E80CCA0FC9F39CBEFB5799EA4FBAD1B26ECA2D35CD61ED514F91D32DFCCD64FDAE67186FCDCCACAFDED95BA435F254EF1392A495A5389C929E3A83F1593C62F5A8D9EC0D044C60D1F8E5015025AB23A467D8D6E98ECCD97828FD7294F0FDD96A1FF17529878A0B554537FE99E570C9DA3A3E554391AAC6BFDEE833C3D312D8CD823F8AAE04EFBF3A4056366DB779CE040
+		String encString = "2F2297314E96FA3E611793212E98A55F613D29886A0E493F51DB13DB5DEEF184B799719CBA0D65717588BB7C08B3C77BB63FF102A200257462DD8913082020E3164F1993FA3359EC145CB3325F0BF5099F8C5131636458C4C5B7810999AE39F9AF25495579DC30E49E32EBDFF2FB2B76C55D77DF944F535D23ED23E9E0EF54754792E7967B80ECC5BEDD744DA4128990661DD9AE53EC49338A2DBC11283245E68B80DBC38FCDA90C7E312780999644756DDFA057024727B725FA4EFE9D2753CCC02861569AE26A054661726AC268FD6E9BC0462B8EDD3CEB8D9BD8B7DFB341317C980533ED5F84FE32146C8DEC4036BB";
+		encString = URLDecoder.decode(encString, "UTF-8");
+		byte[] buffer = decrypt(hex2byte(encString), hex2byte("D6815DD5BA334A26B62C3FE37E63E1D8"));
+	    String result = new String(buffer,"utf-8");
+	    System.out.println(encString);
+	    System.out.println(result);
+
+
+	}
+	
+	public static String convertBase64ToHex(String base64Str){
+		try{
+			Base64 base64decoder = new Base64();
+			byte[] byteStr = base64decoder.decode(base64Str.getBytes());
+			String hexStr = byte2lowHex(byteStr);
+			return hexStr;
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	public static String byte2lowHex(byte[] b)
+	{
+		String hs = "";
+		String stmp = "";
+		for (int n = 0; n < b.length; n++) {
+			stmp = (java.lang.Integer.toHexString(b[n] & 0XFF));
+			if (stmp.length() == 1)
+				hs = hs + "0" + stmp;
+			else
+				hs = hs + stmp;
+		}
+		return hs.toLowerCase();
+	}
+	
+	public static byte[] hex2byte(String s)
+	{
+		byte[] b=s.getBytes();
+		if((b.length%2)!=0)
+			throw new IllegalArgumentException("���Ȳ���ż��");
+		byte[] b2 = new byte[b.length/2];
+		for (int n = 0; n < b.length; n+=2) {
+			String item = new String(b,n,2);
+			b2[n/2] = (byte)Integer.parseInt(item,16);
+		}
+		return b2;
+	}
+	
+	public static byte[] decrypt(byte[] src, byte[] kv)throws Exception
+	{
+		SecretKey key = new SecretKeySpec(kv, "AES");
+		Cipher cp  =  Cipher.getInstance("AES");
+		cp.init(Cipher.DECRYPT_MODE, key);
+		byte[] ptext = cp.doFinal(src);
+		return ptext;
+	}
+	
+}
